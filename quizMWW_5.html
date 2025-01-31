@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz MWW</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #333;
+      border-radius: 5px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: #1e1e1e;
+    }
+
+    .correct {
+      color: #4caf50;
+    }
+
+    .incorrect {
+      color: #f44336;
+    }
+
+    .selected {
+      font-weight: bold;
+    }
+
+    #result {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #333;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      font-weight: bold;
+      color: #e0e0e0;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+
+    input[type="radio"] {
+      margin-right: 10px;
+      min-width: 20px;
+      accent-color: #ff9800;
+    }
+
+    .answer {
+      display: inline-block;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #ff9800;
+    }
+
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1e1e1e;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #555;
+      border-radius: 6px;
+      border: 3px solid #1e1e1e;
+    }
+
+    .explanation {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #2a2a2a;
+      border-left: 4px solid #ff9800;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Quiz MWW</h1>
+  <div id="result">Wynik: 0 / 47</div>
+  <div id="quizContainer"></div>
+
+  <script>
+    const questions = [
+      {
+        question:
+          "W zadaniu optymalizacji jednokryterialnej, obiekt jest opisywany przez:",
+        answers: [
+          "Zmienne decyzyjne",
+          "Parametry",
+          "Obie odpowiedzi są poprawne",
+          "Żadna z wymienionych odpowiedzi nie jest poprawna",
+        ],
+        correct: 2,
+        explanation:
+          "W typowym zadaniu optymalizacji obiekt może być opisywany zarówno przez parametry (stałe w danym kontekście), jak i przez zmienne decyzyjne (wielkości, które modyfikujemy, by znaleźć rozwiązanie optymalne).",
+      },
+      {
+        question:
+          "W zadaniu optymalizacji jednokryterialnej, ograniczenia dzielimy na:",
+        answers: [
+          "Brzegowe i zachowawcze (funkcjonalne)",
+          "Poboczne i zachowawcze (funkcjonalne)",
+          "Zachowawcze i funkcjonalne",
+          "Żadna z odpowiedzi nie jest prawidłowa",
+        ],
+        correct: 0,
+        explanation:
+          "Ograniczenia brzegowe (np. minimalne i maksymalne wartości zmiennych) określają dopuszczalny zakres zmiennych decyzyjnych, natomiast ograniczenia zachowawcze (funkcjonalne) to zależności między zmiennymi (np. równania równowagi, warunki technologiczne), które muszą zostać spełnione.",
+      },
+      {
+        question:
+          "W zadaniu optymalizacji jednokryterialnej wyróżniamy optymalizację:",
+        answers: [
+          "Skalarną i wektorową",
+          "Prostą i złożoną",
+          "Statyczną i dynamiczną",
+          "Funkcjonalną i niefunkcjonalną",
+        ],
+        correct: 2,
+        explanation:
+          "Optymalizacja statyczna odnosi się do problemów, w których warunki i funkcja celu nie zmieniają się w czasie, natomiast optymalizacja dynamiczna uwzględnia zmienne w czasie parametry (lub zmieniające się ograniczenia).",
+      },
+      {
+        question:
+          "Jednym z klasycznych algorytmów optymalizacji jednokryterialnej jest:",
+        answers: [
+          "Metoda Monako",
+          "Metoda J-D",
+          "Metoda Monte Carlo",
+          "Metoda Nowojorska",
+        ],
+        correct: 2,
+        explanation:
+          "Metoda Monte Carlo polega na probabilistycznym (losowym) przeszukiwaniu przestrzeni rozwiązań, co może być stosowane m.in. w zadaniach optymalizacyjnych do przybliżonego wyznaczenia optimum.",
+      },
+      {
+        question:
+          "Przykładowe rodzaje zmiennych wykorzystywanych przy optymalizacji to:",
+        answers: [
+          "Zmienne proste i złożone",
+          "Zmienne ostre i rozmyte",
+          "Zmienne liniowe i nieliniowe",
+          "Wszystkie odpowiedzi są poprawne",
+        ],
+        correct: 3,
+        explanation:
+          "W optymalizacji spotyka się różne typy zmiennych decyzyjnych: mogą one przyjmować postać zmiennych ciągłych lub dyskretnych, mogą być definiowane w ujęciu rozmytym (fuzzy), a także mogą wchodzić w zależności liniowe bądź nieliniowe.",
+      },
+      {
+        question:
+          "Jedną z bezgradientowych metod poszukiwania prostych jest:",
+        answers: [
+          "Metoda Neldera-Meada",
+          "Metoda Suchodolskiego",
+          "Metoda Banacha",
+          "Metoda Drahrepus-Kufa",
+        ],
+        correct: 0,
+        explanation:
+          "Metoda Neldera-Meada (zwana też metodą sympleksu w n-wymiarach) nie wymaga obliczania pochodnych funkcji celu. Jest często wykorzystywana w sytuacjach, gdy gradient nie jest łatwy do wyznaczenia lub funkcja nie jest gładka.",
+      },
+      {
+        question: "Jedną z podstawowych cech algorytmów genetycznych jest:",
+        answers: [
+          "Zdolność do samo-kopiowania",
+          "Stosowanie probabilistycznych metod wyboru",
+          "Przetwarzanie bezpośrednie parametrów zadania",
+          "Rozpoczynają poszukiwania od pojedynczego punktu",
+        ],
+        correct: 1,
+        explanation:
+          "Algorytmy genetyczne wykorzystują losowe mechanizmy (np. ruletkę, turniej) do wyboru osobników do rozmnażania, dzięki czemu populacja ewoluuje w sposób stochastyczny i zachowuje zróżnicowanie.",
+      },
+      {
+        question: "Podstawowym celem reprodukcji jest",
+        answers: [
+          "Żadna z odpowiedzi nie jest prawidłowa",
+          "Obie odpowiedzi są prawidłowe",
+          "Utworzenie nowego osobnika na podstawie jego rodziców",
+          "Sens, aby potomek dziedziczył cechy swoich rodziców",
+        ],
+        correct: 2,
+        explanation:
+          "Reprodukcja w algorytmach genetycznych polega na tworzeniu nowych osobników (potomków) na podstawie rodziców, tak by dziedziczyli ich cechy i – przy odpowiednich zabiegach mutacji i selekcji – stopniowo poprawiali jakość rozwiązań.",
+      },
+      {
+        question: "Jedną z metod krzyżowania jest:",
+        answers: [
+          "Krzyżowanie równoległe",
+          "Krzyżowanie proste",
+          "Krzyżowanie naprzemienne",
+          "Krzyżowanie arytmetyczne",
+        ],
+        correct: 3,
+        explanation:
+          "Krzyżowanie arytmetyczne polega na tworzeniu potomka poprzez liniową kombinację wartości genów rodziców, co pozwala “mieszać” cechy rodziców w sposób ciągły (szczególnie przy zmiennych rzeczywistych).",
+      },
+      {
+        question: "Kto sformułował podstawy programowania ewolucyjnego?",
+        answers: [
+          "Jojoba Kuashiva",
+          "Lawrence Fogel",
+          "Obie odpowiedzi są prawidłowe",
+          "Żadna z odpowiedzi nie jest poprawna",
+        ],
+        correct: 1,
+        explanation:
+          "Lawrence Fogel jest uznawany za jednego z twórców programowania ewolucyjnego (Evolutionary Programming), formułując podstawy tej metody w latach 60. XX wieku.",
+      },
+      {
+        question: "W algorytmach genetycznych jedną z hipotez nazywa się:",
+        answers: [
+          "Hipotezą o pałeczkach",
+          "Hipotezą o kółeczkach",
+          "Hipotezą o cegiełkach",
+          "Hipotezą o paluszkach",
+        ],
+        correct: 2,
+        explanation:
+          "Hipoteza o cegiełkach (Building Block Hypothesis) mówi, że małe, dobrze dopasowane fragmenty chromosomów (tzw. cegiełki) mają tendencję do łączenia się w coraz doskonalsze konfiguracje w kolejnych pokoleniach.",
+      },
+      {
+        question:
+          "Metaheurystyki to _____ metody rozwiązywania szerokiej klasy problemów.",
+        answers: ["najszybsze", "najprostsze", "najbardziej zaawansowane", "uniwersalne"],
+        correct: 3,
+        explanation:
+          "Metaheurystyki (np. algorytmy genetyczne, rojenie cząstek, algorytm mrówkowy) to elastyczne i dość ogólne procedury, które można stosować w wielu różnorodnych problemach optymalizacyjnych.",
+      },
+      {
+        question: "Jednym z algorytmów ewolucyjnych jest:",
+        answers: [
+          "Algorytm robaczkowy",
+          "Algorytm mrówkowy",
+          "Algorytm pszczeli",
+          "Algorytm stonogi",
+        ],
+        correct: 1,
+        explanation:
+          "Algorytm mrówkowy (Ant Colony Optimization, ACO) należy do klasy algorytmów ewolucyjnych/heurystycznych, które naśladują zachowania społeczne (w tym przypadku mrówek) w celu rozwiązywania problemów (np. wyszukiwania najkrótszej ścieżki).",
+      },
+      {
+        question:
+          "Zadanie polegające na wyznaczeniu najkrótszej ścieżki łączącej wszystkie miasta i przechodzącej przez każde z nich dokładnie jeden raz nazywa się:",
+        answers: [
+          "Problemem Komiwojażera",
+          "Problemem Nawigatora",
+          "Problemem Pilota",
+          "Problemem Dżokeja",
+        ],
+        correct: 0,
+        explanation:
+          "Problem Komiwojażera (Traveling Salesman Problem, TSP) to słynne zadanie wyznaczenia najkrótszej możliwej trasy pozwalającej odwiedzić każde z zadanych miast raz i wrócić do punktu startowego.",
+      },
+      {
+        question:
+          "Zmodyfikowana metoda optymalizacji rojem cząstek może być z powodzeniem stosowana jako uniwersalne narzędzie wspomagające optymalizację elementów konstrukcji:",
+        answers: [
+          "Optymalizacja kątownicy przestrzennej",
+          "Optymalizacja kratownicy powietrznej",
+          "Optymalizacja sprężyny ściskanej",
+          "Optymalizacja sprężyny luzowanej",
+        ],
+        correct: 1,
+        explanation:
+          "Optymalizacja rojem cząstek (Particle Swarm Optimization, PSO) po odpowiednich modyfikacjach znajduje zastosowanie w inżynierii, np. do optymalizacji złożonych układów kratowych, gdzie poszukuje się minimalnego ciężaru, zachowując wymaganą wytrzymałość.",
+      },
+      {
+        question:
+          "Punktem charakterystycznym w przestrzeni kryterialnej NIE JEST:",
+        answers: ["Punkt idealny", "Punkt nadir", "Punkt antyidealny", "Punkt przesunięty"],
+        correct: 3,
+        explanation:
+          "W analizie wielokryterialnej wyróżniamy m.in. punkt idealny (złożony z najlepszych wartości poszczególnych kryteriów), punkt antyidealny czy punkt nadir, natomiast „punkt przesunięty” nie jest standardowym pojęciem.",
+      },
+      {
+        question:
+          "Kryterium skalarne jest sposobem ilościowego określenia jakości za pomocą jednej liczby poprzez przyjęcie…:",
+        answers: [
+          "Różnej skali dla wszystkich kryteriów oceny",
+          "Wspólnej skali dla wszystkich kryteriów oceny",
+          "Wspólnej skali dla poszczególnych kryteriów oceny",
+          "Różnej skali dla poszczególnych kryteriów oceny",
+        ],
+        correct: 2,
+        explanation:
+          "Przy tworzeniu kryterium skalarnego przekształca się każde kryterium do wspólnej skali (np. 0–1), co umożliwia łączenie wielu kryteriów w jedno i porównywanie różnych wariantów w sposób jednokryterialny.",
+      },
+      {
+        question: "Jedną ze strategii w metodach skalaryzacji jest:",
+        answers: ["Strategia liniowa", "Strategia krzywej", "Strategia Harrison-Cooke", "Strategia automatyczna"],
+        correct: 0,
+        explanation:
+          "Strategia liniowa polega na sprowadzeniu wielokryterialnego zadania do postaci jednej funkcji celu (np. sumy ważonej), w której każdemu kryterium przypisuje się określoną wagę.",
+      },
+      {
+        question: "W metodach skalaryzacji występują kodowania:",
+        answers: [
+          "Wg. Neumanna-Morgensterna oraz metodą Pattern",
+          "Metodą Karnaugh",
+          "Wg. Eddy-Marscha oraz metodą Random",
+          "Metodą l’Hostpitala",
+        ],
+        correct: 0,
+        explanation:
+          "Kodowanie wg. Neumanna-Morgensterna oraz metodą Pattern to dwie popularne techniki przeskalowywania ocen kryteriów do wspólnej skali (np. 0–1), co ułatwia ich późniejszą agregację.",
+      },
+      {
+        question: "Metody z relacją przewyższania to na przykład:",
+        answers: [
+          "R2D2, Jabba, Jar-Jar",
+          "Saturn, Uran, Jowisz",
+          "Electre, Oreste, Mappac",
+          "SpaceX, Tesla, StarLink",
+        ],
+        correct: 2,
+        explanation:
+          "Relacja przewyższania (outranking) jest wykorzystywana m.in. w metodach ELECTRE, ORESTE czy MAPPAC, gdzie warianty porównuje się parami pod kątem tego, czy jeden „wystarczająco” przewyższa drugi.",
+      },
+      {
+        question: "Czym jest propozycja Blina?",
+        answers: [
+          "Podejściem wykorzystującym zaawansowane techniki kryminologii",
+          "Podejściem wykorzystującym teorię zbiorów rozmytych",
+          "Podejściem mówiącym o wielkości wszechświata",
+          "Żadna z odpowiedzi nie jest poprawna",
+        ],
+        correct: 1,
+        explanation:
+          "Propozycja Blina (a właściwie metody Blina) to podejście w wielokryterialnej analizie decyzyjnej uwzględniające teorię zbiorów rozmytych do opisu preferencji decydentów i stopnia akceptowalności poszczególnych wariantów.",
+      },
+      {
+        question: "Co to jest metoda AHP?",
+        answers: [
+          "Auto Hold Process",
+          "Anti-Hype Prediction",
+          "Analytic Horn Pass",
+          "Analytic Hierarchy Process",
+        ],
+        correct: 3,
+        explanation:
+          "Metoda AHP (Analytic Hierarchy Process) opracowana przez Thomasa Saaty’ego służy do podejmowania decyzji wielokryterialnych. Polega na dekompozycji problemu na hierarchię, a następnie porównaniu par kryteriów i wariantów.",
+      },
+      {
+        question: "Metoda ograniczonych kryteriów inaczej nazywana jest:",
+        answers: [
+          "Hold-On Metod",
+          "Trade-Off Metod",
+          "Be-Safe Metod",
+          "Go-Ahead Metod",
+        ],
+        correct: 1,
+        explanation:
+          "W metodzie ograniczonych kryteriów (Trade-Off Method) niektóre kryteria traktuje się jako ograniczenia (z ustalonymi progami), a optymalizuje się względem pozostałych.",
+      },
+      {
+        question: "Rozwiązanie niezdominowane to:",
+        answers: [
+          "zawsze jest tylko jedno",
+          "rozwiązanie niejednoznaczne matematyczne",
+          "żadna odpowiedź nie jest poprawna",
+          "rozwiązania jednoznacznie określone matematycznie",
+        ],
+        correct: 3,
+        explanation:
+          "Rozwiązanie niezdominowane (zwane też optymalnym w sensie Pareto) jest ściśle zdefiniowane w analizie wielokryterialnej: żadne inne rozwiązanie nie poprawia wartości wszystkich (lub co najmniej jednego) kryteriów jednocześnie. Definicja jest jasna i jednoznaczna z punktu widzenia matematyki wielokryterialnej.",
+      },
+      {
+        question:
+          "Mamy dwa chromosomy: 11001010 oraz 01001010. Porównując te dwa chromosomy, odpowiedz, z czym mamy do czynienia?",
+        answers: ["przesunięciem", "krzyżowaniem", "inwersją", "mutacją"],
+        correct: 3,
+        explanation:
+          "Jedyna różnica między chromosomami występuje w pierwszym bicie (1 → 0). Jest to typowa mutacja polegająca na zmianie wartości bitu. Nie nastąpiło ani skrzyżowanie, ani inwersja sekwencji genów.",
+      },
+      {
+        question:
+          "Dodatnie stożki dominacji zastosowane w ocenie wielokryterialnej:",
+        answers: [
+          "pozwalają znaleźć tylko jedno rozwiązanie dopuszczalne",
+          "umożliwiają częściowe uporządkowanie ocen rozwiązań dopuszczalnych",
+          "umożliwiają całkowite uporządkowanie ocen rozwiązań dopuszczalnych",
+          "nie mają zastosowania do poszukiwań rozwiązań niezdominowanych",
+        ],
+        correct: 1,
+        explanation:
+          "Stożki dominacji to narzędzie umożliwiające określenie relacji typu „dominuje/niedominuje” w wielokryterialnej przestrzeni. Pozwala to na częściowe uporządkowanie rozwiązań i wyznaczenie zbioru rozwiązań niezdominowanych.",
+      },
+      {
+        question: "Co to jest przystosowanie?",
+        answers: [
+          "nie istnieje taki termin",
+          "metoda wyboru najlepszego chromosomu",
+          "obliczenie wartości funkcji dla wybranego chromosomu",
+          "operacja stosowana w algorytmach genetycznych",
+        ],
+        correct: 2,
+        explanation:
+          "Przystosowanie (ang. fitness) w algorytmach genetycznych to nic innego jak wartość funkcji oceny (lub funkcji celu) danego osobnika (chromosomu), określająca, jak dobrze dany osobnik „radzi sobie” w kontekście problemu optymalizacyjnego.",
+      },
+      {
+        question:
+          "Mamy na początku dwa chromosomy: 11100100 oraz 00110110. Po wykonaniu operacji krzyżowania uzyskano dwa nowe chromosomy: 11100110 oraz 00110100. W którym miejscu nastąpiło krzyżowanie (liczymy od prawej)?",
+        answers: ["2", "1", "3", "5"],
+        correct: 0,
+        explanation:
+          "W nowo powstałych chromosomach różnica w stosunku do rodziców jest w drugim bicie od prawej. Oznacza to, że punkt krzyżowania został wybrany między drugim a trzecim bitem od prawej strony.",
+      },
+      {
+        question: "Punkty referencyjne przy ocenie wielokryterialnej są:",
+        answers: [
+          "punktami, które wynikają z wewnętrznych własności ocen niezdominowanych",
+          "tworzone w przestrzeni zmiennych decyzyjnych",
+          "tworzone w przestrzeni celów",
+          "żadna odpowiedź nie jest prawdziwa",
+        ],
+        correct: 2,
+        explanation:
+          "Metody oparte na punktach referencyjnych (ang. reference point methods) zakładają istnienie „pożądanego” punktu w przestrzeni celów, a każde rozwiązanie jest oceniane pod kątem stopnia zbliżenia się do tego punktu.",
+      },
+      {
+        question: "Który z algorytmów NIE NALEŻY do algorytmów ewolucyjnych?",
+        answers: [
+          "algorytm rafy koralowej",
+          "algorytm harmoniczny",
+          "algorytm mrówkowy",
+          "algorytm Monte Carlo",
+        ],
+        correct: 3,
+        explanation:
+          "Algorytm Monte Carlo opiera się na losowym próbkowaniu przestrzeni rozwiązań, nie wykorzystuje jednak koncepcji populacji, genów, doboru, krzyżowania ani mutacji, będących cechą algorytmów ewolucyjnych.",
+      },
+      {
+        question:
+          "Zmodyfikowana metoda leksykograficzna pozwala na wyznaczenie:",
+        answers: [
+          "wyznaczenie najlepszego i najgorszego rozwiązania ze zbioru rozwiązań",
+          "jednego rozwiązania ze zbioru rozwiązań",
+          "wygenerowanie rankingu rozwiązań ze zbioru rozwiązań",
+          "przydzielenie rozwiązań do zdefiniowanych kategorii (najlepsze, najgorsze spełniające oczekiwania)",
+          "nie ma takiej metody",
+        ],
+        correct: 0,
+        explanation:
+          "W zmodyfikowanej metodzie leksykograficznej sortuje się rozwiązania wg priorytetów kryteriów, co może pozwolić na wyłonienie zarówno najlepszego, jak i najgorszego wariantu (jeśli rozważamy wszystkie kryteria w kolejności ich ważności).",
+      },
+      {
+        question:
+          "Jedną z bezgradientowych metod poszukiwania prostych jest:",
+        answers: [
+          "Metoda Ulma",
+          "Metoda Neldera-Meada",
+          "Metoda Gaussa",
+          "Metoda Banacha",
+        ],
+        correct: 1,
+        explanation:
+          "Metoda Neldera-Meada (tzw. metoda sympleksu) jest klasycznym przykładem algorytmu bezgradientowego, który do optymalizacji wykorzystuje ewolucję wierzchołków prostychkształtnych figur (sympleksów) w przestrzeni decyzyjnej.",
+      },
+      {
+        question: "Przy metodzie Blina potrzebujemy:",
+        answers: [
+          "zbioru wariantów i zbioru decydentów",
+          "zbioru kryteriów i zbioru wariantów",
+          "zbioru kryteriów i wag ważności kryteriów",
+          "zbioru kryteriów i ich wartości dla wszystkich wariantów",
+        ],
+        correct: 3,
+        explanation:
+          "W metodzie Blina (opartej na logice rozmytej) kluczowe jest posiadanie ocen (wartości) każdego wariantu względem rozpatrywanych kryteriów, co pozwala budować rozmyte relacje preferencji.",
+      },
+      {
+        question:
+          "W metodzie AHP do uszeregowania wariantów od najlepszego do najgorszego:",
+        answers: [
+          "Porównujemy parami tylko warianty",
+          "porównujemy parami kryteria, wyznaczamy ich ważność, a potem porównujemy parami warianty",
+          "porównujemy parami warianty i podajemy wagi ważności kryteriów",
+          "skalaryzujemy kryteria i dopiero potem porównujemy parami warianty",
+        ],
+        correct: 1,
+        explanation:
+          "Metoda AHP polega na dwustopniowych porównaniach parami: najpierw ustala się wagi (priorytety) kryteriów, a następnie ocenia się warianty względem każdego kryterium. Dzięki temu można ustalić końcowy ranking.",
+      },
+      {
+        question:
+          "Metoda PROMETHEE służąca do wyboru wielokryterialnego należy do metod polegającej na zastosowaniu:",
+        answers: [
+          "funkcji dystansowej",
+          "skalaryzacji po normalizacji wartości kryteriów",
+          "relacji przewyższania",
+        ],
+        correct: 2,
+        explanation:
+          "Metoda PROMETHEE (Preference Ranking Organization Method for Enrichment Evaluation) należy do metod bazujących na relacji przewyższania (outranking), gdzie porównuje się warianty pod kątem preferencji cząstkowych w odniesieniu do poszczególnych kryteriów.",
+      },
+      {
+        question: "Kodowanie Neumana-Morgensterna polega na:",
+        answers: [
+          "dzieleniu bieżącej wartości kryterium rozpatrywanego wariantu przez wartość rozstępu",
+          "dzieleniu bieżącej wartości kryterium rozpatrywanego wariantu odniesioną do wartości minimalnej tego kryterium przez wartość rozstępu",
+          "dzieleniu bieżącej wartości kryterium rozpatrywanego wariantu odniesioną do wartości minimalnej tego kryterium przez wartość ekstremalną tego kryterium",
+        ],
+        correct: 2,
+        explanation:
+          "W podejściu Neumanna-Morgensterna wartość kryterium wariantu normalizuje się, odejmując wartość minimalną (dla tego kryterium) i dzieląc przez rozstęp (różnicę między wartością maksymalną a minimalną). Pozwala to ujednolicić skale różnych kryteriów.",
+      },
+      {
+        question: "Punkt nadir, dla zadania minimalizacji, to:",
+        answers: [
+          "punkt przedstawiający najmniej preferowany poziom realizacji wszystkich celów jednocześnie z rozwiązań dopuszczalnych",
+          "punkt przedstawiający najmniej preferowany poziom realizacji wszystkich celów jednocześnie z rozwiązań niezdominowanych",
+          "punkt składający się z minimalnych wartości rozpatrywanych ocen funkcji celu",
+        ],
+        correct: 1,
+        explanation:
+          "Punkt nadir w ujęciu wielokryterialnym oznacza wektor złożony z największych wartości funkcji celu w zbiorze rozwiązań niezdominowanych (dla zadania minimalizacji). Innymi słowy jest to „najmniej korzystny” punkt, ale wciąż osiągalny w obrębie rozwiązań optymalnych w sensie Pareto.",
+      },
+      {
+        question: "Na czym polega skalaryzacja:",
+        answers: [
+          "wybór jednego kryterium ze zbioru kryteriów, a pozostałe kryteria są przesuwane do ograniczeń",
+          "ustawienie kryteriów w pewną hierarchię i poszukiwanie najlepszego wariantu jak dla zadania jednokryterialnego",
+          "agregacji istniejących kryteriów do jednego kryterium",
+        ],
+        correct: 2,
+        explanation:
+          "Skalaryzacja to sprowadzenie wielokryterialnego problemu decyzyjnego do postaci jednokryterialnej, np. przez zsumowanie (z odpowiednimi wagami) bądź inną funkcję agregującą kilka kryteriów w jedno.",
+      },
+      {
+        question: "Jeśli kryterium ma charakter stymulanty to oznacza, że:",
+        answers: [
+          "wzrost jego wartości świadczy o spadku poziomu zjawiska złożonego czyli optymalizowanego obiegu",
+          "nie ma wpływu na poziom zjawiska złożonego",
+          "wzrost jego wartości świadczy o wzroście poziomu zjawiska złożonego",
+        ],
+        correct: 2,
+        explanation:
+          "Stymulanta to takie kryterium, którego wyższe wartości uznaje się za korzystniejsze (np. większy zysk, wyższa wydajność). Istnieją także destymulanty – kryteria, w których pożądane są niższe wartości.",
+      },
+      {
+        question: "Stożki dodatnie służą do:",
+        answers: [
+          "wyznaczenia rankingu wariantów",
+          "wyznaczenia rozwiązań optymalnych w sensie Pareto",
+          "określenia przynależności do zidentyfikowania klas wariantów",
+        ],
+        correct: 1,
+        explanation:
+          "Stożki dodatnie (ang. positive cones) stanowią formalizm pozwalający określić, czy jeden punkt w przestrzeni kryterialnej dominuje inny. To z kolei umożliwia wyznaczenie zbioru rozwiązań niezdominowanych (optymalnych w sensie Pareto).",
+      },
+      {
+        question: "Metody bazujące na relacjach przewyższania pozwalają na:",
+        answers: [
+          "wyznaczeniu wariantów niezdominowanych",
+          "zbudowaniu rankingu wariantów",
+          "przydzieleniu poszczególnych wariantów do zdefiniowanych klas",
+        ],
+        correct: 0,
+        explanation:
+          "Relacja przewyższania (outranking) jest często wykorzystywana do identyfikacji wariantów, które są lepsze w sensie preferencji dla znacznej części (lub w pewnych warunkach) kryteriów, co umożliwia ustalenie zbioru rozwiązań niezdominowanych.",
+      },
+      {
+        question: "Punkty satysfakcjonujące to punkty, które:",
+        answers: [
+          "są wewnętrznymi właściwościami rozpatrywanego zbioru wariantów",
+          "to punkty definiowane przez eksperta, a ich składowe są dodatkowymi ograniczeniami, które muszą spełniać analizowane warianty",
+          "są punktami referencyjnymi służącymi do zastosowania metod bazujących na funkcji dystansowej",
+        ],
+        correct: 1,
+        explanation:
+          "Wielokryterialne punkty satysfakcjonujące (satisfying points) to takie wartości kryteriów, które decydent chciałby co najmniej osiągnąć. Stanowią więc dodatkowe ograniczenia zawężające zbiór rozwiązań dopuszczalnych do tych spełniających minimalne wymagania.",
+      },
+      {
+        question:
+          "Francuski naukowiec Roy opracował następującą rodzinę metod do oceny wielokryterialnej:",
+        answers: ["EXPROM", "ELECTRE", "MAPPAC"],
+        correct: 1,
+        explanation:
+          "Bernard Roy zainicjował rodzinę metod ELECTRE (ELimination Et Choix Traduisant la REalité), które wykorzystują relację przewyższania do analizowania i klasyfikacji wariantów w zadaniach wielokryterialnych.",
+      },
+      {
+        question: "Kodowanie metodą Pattern polega na:",
+        answers: [
+          "dzieleniu bieżącej wartości kryterium rozpatrywanego wariantu przez wartość ekstremalną tego kryterium",
+          "dzieleniu bieżącej wartości kryterium rozpatrywanego wariantu odniesioną do wartości minimalnej tego kryterium przez wartość ekstremalną tego kryterium",
+          "dzieleniu bieżącej wartości kryterium rozpatrywanego wariantu przez sumę miar wszystkich wariantów tego kryterium",
+        ],
+        correct: 2,
+        explanation:
+          "W metodzie Pattern bieżąca wartość kryterium każdego wariantu jest dzielona przez sumę wartości tego kryterium dla wszystkich wariantów, co pozwala przekształcić każdą ocenę na skalę 0–1, w zależności od udziału w sumie.",
+      },
+      {
+        question: "Zmodyfikowana metoda leksykograficzna pozwala na:",
+        answers: [
+          "wskazanie najlepszego wariantu lub podzbioru najlepszych rozwiązań",
+          "wyznaczenie rozwiązań optymalnych w sensie Pareto",
+          "wyznaczenie rankingu analizowanych wariantów",
+        ],
+        correct: 0,
+        explanation:
+          "W zmodyfikowanej metodzie leksykograficznej w pierwszej kolejności rozstrzyga się o wyższości wariantu w świetle najważniejszego kryterium, a przy remisie – porównuje się następne kryterium. Pozwala to finalnie wskazać najlepsze (lub najlepsze równoważne) rozwiązania.",
+      },
+      {
+        question: "W metodzie Blina poszczególni eksperci:",
+        answers: [
+          "wyznaczają hierarchię kryteriów opisujących warianty",
+          "wyznaczają własne uporządkowanie wariantów",
+          "budują własne stożki dominacji i wyznaczają podzbiór wariantów niezdominowanych",
+        ],
+        correct: 2,
+        explanation:
+          "W podejściu Blina (opartym na logice rozmytej) każdy ekspert definiuje swoje preferencje (np. w postaci stożków dominacji w przestrzeni kryterialnej), a następnie łączy się te preferencje w analizie zbiorowej, wskazując podzbiór rozwiązań niezdominowanych.",
+      },
+      {
+        question: "Metoda AHP to metoda pozwalająca na:",
+        answers: [
+          "wyznaczanie uporządkowania społecznego",
+          "wyznaczanie wariantów niedominowanych",
+          "wyznaczenie rankingu wariantów",
+        ],
+        correct: 2,
+        explanation:
+          "W metodzie AHP, po ustaleniu wag kryteriów i ocenie wariantów względem każdego kryterium, otrzymujemy ostateczny wynik w postaci rankingu rozwiązań od najlepszego do najgorszego.",
+      },
+    ];
+
+    const quizContainer = document.getElementById("quizContainer");
+    let userAnswers = [];
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function deepCopyQuestions(questions) {
+      return questions.map(q => ({
+        question: q.question,
+        answers: [...q.answers],
+        correct: q.correct,
+        explanation: q.explanation
+      }));
+    }
+
+    const shuffledQuestions = shuffleArray(deepCopyQuestions(questions));
+    userAnswers = new Array(shuffledQuestions.length).fill(null);
+
+    shuffledQuestions.forEach(q => {
+      const correctAnswerText = q.answers[q.correct];
+      shuffleArray(q.answers);
+      q.correct = q.answers.findIndex(answer => answer === correctAnswerText);
+    });
+
+    function updateScore() {
+      const score = userAnswers.reduce((acc, answer, index) => {
+        return acc + (answer === shuffledQuestions[index].correct ? 1 : 0);
+      }, 0);
+      document.getElementById("result").textContent = `Wynik: ${score} / ${shuffledQuestions.length}`;
+    }
+
+    function handleAnswerSelection(questionIndex, selectedAnswer) {
+      userAnswers[questionIndex] = selectedAnswer;
+      updateScore();
+      const questionDiv = document.querySelector(`[data-question="${questionIndex}"]`);
+      const answerElements = questionDiv.querySelectorAll('.answer');
+      const explanationDiv = questionDiv.querySelector('.explanation');
+
+      answerElements.forEach((answerElement, index) => {
+        answerElement.classList.remove('correct', 'incorrect', 'selected');
+        if (index === shuffledQuestions[questionIndex].correct) {
+          answerElement.classList.add('correct');
+        }
+        if (index === selectedAnswer) {
+          answerElement.classList.add('selected');
+          if (index !== shuffledQuestions[questionIndex].correct) {
+            answerElement.classList.add('incorrect');
+          }
+        }
+      });
+
+      explanationDiv.textContent = shuffledQuestions[questionIndex].explanation;
+      explanationDiv.style.display = 'block';
+    }
+
+    function generateQuiz() {
+      shuffledQuestions.forEach((q, index) => {
+        const questionDiv = document.createElement("div");
+        questionDiv.classList.add("question");
+        questionDiv.setAttribute('data-question', index);
+
+        const questionTitle = document.createElement("p");
+        questionTitle.textContent = `${index + 1}. ${q.question}`;
+        questionDiv.appendChild(questionTitle);
+
+        q.answers.forEach((answer, i) => {
+          const answerDiv = document.createElement("div");
+          answerDiv.classList.add('answer');
+          answerDiv.textContent = `${answer}`;
+
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = `q${index}`;
+          input.value = i;
+          input.addEventListener('change', () => handleAnswerSelection(index, i));
+
+          label.appendChild(input);
+          label.appendChild(answerDiv);
+          questionDiv.appendChild(label);
+        });
+
+        const explanationDiv = document.createElement("div");
+        explanationDiv.classList.add('explanation');
+        questionDiv.appendChild(explanationDiv);
+
+        quizContainer.appendChild(questionDiv);
+      });
+    }
+
+    generateQuiz();
+  </script>
+</body>
+
+</html>
